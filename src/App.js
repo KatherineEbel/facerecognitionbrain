@@ -33,9 +33,31 @@ const particlesOptions = {
 class App extends Component {
   state = {
     input: '',
-    imageUrl: ''
+    imageUrl: null,
+    faceBoxes: [
+    
+    ]
   };
   
+  calculateFaceLocation = data => {
+    const {bounding_box} = data.regions[0].region_info;
+    console.log(bounding_box);
+    const image = document.getElementById('inputImage');
+    const width = +image.width;
+    const height = +image.height;
+    console.log(width, height);
+    return {
+      left: bounding_box.left_col * width,
+      top: bounding_box.top_row * height,
+      right: width - (bounding_box.right_col * width),
+      bottom: height - (bounding_box.bottom_row * height)
+    }
+  };
+  
+  displayFaceFor = box => {
+    console.log(box);
+    this.setState({box});
+  };
   handleInputChange = event => {
     const { value: input } = event.target;
     this.setState({input});
@@ -45,18 +67,12 @@ class App extends Component {
     this.setState(prev => ({imageUrl: prev.input}));
     
     app.models.predict(Clarifai.FACE_DETECT_MODEL, this.state.input)
-       .then((response) => {
-         const {bounding_box} = response.outputs[0].data.regions[0].region_info;
-         console.log(bounding_box);
-      })
-       .catch(err => {
-         console.log('INPUT: ', this.state.input);
-         console.log(err)
-      });
+       .then(({outputs}) => this.displayFaceFor(this.calculateFaceLocation(outputs[0].data)))
+       .catch(err => console.log(err));
   };
   
   render() {
-    const {imageUrl} = this.state;
+    const {box, imageUrl} = this.state;
     return (
       <div className="App">
         <Particles
@@ -69,7 +85,7 @@ class App extends Component {
         <ImageLinkForm
           submit={this.handleSubmit}
           change={this.handleInputChange}/>
-        <FaceRecognition imageUrl={imageUrl}/>
+        <FaceRecognition box={box} imageUrl={imageUrl}/>
       </div>
     );
   }

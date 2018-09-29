@@ -1,9 +1,21 @@
 import React from 'react';
+import './FaceRecognition.css';
 
-const FaceRecognition = ({image}) => {
+const styleForBox = box => {
+  if (!box) { return null }
+  return {
+    ...box
+  };
+};
+const FaceRecognition = ({box, imageUrl}) => {
   return (
-    <div className="center mt5">
-      <img src={`https://samples.clarifai.com/face-det.jpg`} alt="face-detect photo"/>
+    <div className="center ma">
+      <div className="absolute mt2">
+        <img id="inputImage" src={imageUrl} alt="face-detect photo" width='500px' height='auto'/>
+        <div className="bounding-box"
+             style={styleForBox(box)}
+        />
+      </div>
     </div>
   );
 };
