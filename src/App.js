@@ -9,7 +9,7 @@ import Particles from 'react-particles-js';
 import Clarifai from 'clarifai';
 
 const app = new Clarifai.App({
-  apiKey: '058e0c0c590044f6b54a6124e2a93db7'
+  apiKey: process.env.REACT_APP_CLARIFAI_KEY
 });
 const particlesOptions = {
             particles: {
@@ -32,7 +32,8 @@ const particlesOptions = {
 
 class App extends Component {
   state = {
-    input: ''
+    input: '',
+    imageUrl: ''
   };
   
   handleInputChange = event => {
@@ -41,16 +42,21 @@ class App extends Component {
   };
   
   handleSubmit = event => {
-    app.models.predict("a403429f2ddf4b49b307e318f00e528b", "https://samples.clarifai.com/face-det.jpg")
+    this.setState(prev => ({imageUrl: prev.input}));
+    
+    app.models.predict(Clarifai.FACE_DETECT_MODEL, this.state.input)
        .then((response) => {
-         console.log(response);
+         const {bounding_box} = response.outputs[0].data.regions[0].region_info;
+         console.log(bounding_box);
       })
        .catch(err => {
+         console.log('INPUT: ', this.state.input);
          console.log(err)
       });
   };
   
   render() {
+    const {imageUrl} = this.state;
     return (
       <div className="App">
         <Particles
@@ -63,7 +69,7 @@ class App extends Component {
         <ImageLinkForm
           submit={this.handleSubmit}
           change={this.handleInputChange}/>
-        <FaceRecognition image={null}/>}
+        <FaceRecognition imageUrl={imageUrl}/>
       </div>
     );
   }
